@@ -1,0 +1,36 @@
+#!/usr/bin/env python
+
+
+from certificateauthority import *
+
+import certificateauthority
+import sys
+reload(certificateauthority)
+
+def printf(format,*args): sys.stdout.write(format%args)
+def fprintf(fp,format,*args): fp.write(format%args)
+def chop(line):
+    return line.replace("\n","").replace("\r","")
+
+printf("Enter fileBase of CSR:")
+csrBase = chop(sys.stdin.readline())
+printf("Enter fileBase of CA:")
+caBase = chop(sys.stdin.readline())
+
+printf("Will this be a signing CA(y/n):")
+if chop(sys.stdin.readline()).lower()[0] == "y":
+    allowCa = True
+else:
+    allowCa = False
+ca_kw = {}
+ca_kw["key_file"] = caBase + ".key"
+ca_kw["crt_file"] = caBase + ".crt"
+
+ca = CertificateAuthority(**ca_kw)
+csr = ca.load_req(csrBase + ".csr")
+crt = ca.signcsr(csr,ca=allowCa)
+
+crt_pem = crt.as_pem()
+crt_file = fullPath(csrBase + ".crt")
+open(crt_file,"w").write(crt_pem)
+
