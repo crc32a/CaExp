@@ -10,7 +10,6 @@ def fprintf(fp,format,*args): fp.write(format%args)
 def chop(line_in):
     return line_in.replace("\r","").replace("\n","")
 
-conf = certificateauthority.load_json("~/ca.json")
 ca = CertificateAuthority()
 
 

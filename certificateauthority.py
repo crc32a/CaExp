@@ -99,6 +99,7 @@ class CertificateAuthority(object):
     def gencsr(self,pri_key,*args,**kw):
         ca = kw.pop("ca",False)
         md = kw.pop("md","sha1")
+        version = kw.pop("version",2)
         exts = M2Crypto.X509.X509_Extension_Stack()
         if ca:
             ext = M2Crypto.X509.new_extension('basicConstraints','CA:TRUE')
@@ -112,7 +113,7 @@ class CertificateAuthority(object):
         subj = self.kw_subject(**kw)
         req.set_subject(subj)
         req.set_pubkey(pubkey)
-        req.set_version(3)
+        req.set_version(version)
         req.sign(pubkey,md)
         return req      
 
@@ -125,6 +126,7 @@ class CertificateAuthority(object):
         serial = kw.pop("serial",rnd.randint(0,2**31-1))
         ca = kw.pop("ca",False)
         md = kw.pop("md","sha1")
+        version = kw.pop("version",2)
         days = kw.pop("days",730)
         secs = days * 24 * 60 * 60
         pubkey = csr.get_pubkey()
@@ -143,7 +145,7 @@ class CertificateAuthority(object):
         crt.set_not_before(notbefore)
         crt.set_not_after(notafter)
         crt.set_serial_number(serial)
-        crt.set_version(3)
+        crt.set_version(version)
         pri_evp = M2Crypto.EVP.PKey()
         pri_evp.assign_rsa(ca_key,capture=0)
         crt.sign(pri_evp,md)
@@ -169,6 +171,7 @@ class CertificateAuthority(object):
         pubkey = csr.get_pubkey()
         days = kw.pop("days",730)
         md = kw.pop("md",'sha1')
+        version = kw.pop("version",2)
         secs = days * 24 * 60 * 60
         ca = kw.pop("ca",False)
         if csr.verify(pubkey) != 1:
@@ -184,7 +187,7 @@ class CertificateAuthority(object):
         name = csr.get_subject()
         crt.set_subject(name)
         crt.set_issuer(name)
-        crt.set_version(3)
+        crt.set_version(version)
         crt.add_ext(self.caExt(ca))
         pri_evp = M2Crypto.EVP.PKey()
         pri_evp.assign_rsa(pri_key,capture=0)

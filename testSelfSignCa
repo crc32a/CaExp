@@ -1,0 +1,40 @@
+#!/usr/bin/env python
+
+from certificateauthority import *
+import certificateauthority
+import sys
+
+def printf(format,*args): sys.stdout.write(format%args)
+def fprintf(fp,format,*args): fp.write(format%args)
+
+def chop(line_in):
+    return line_in.replace("\r","").replace("\n","")
+
+ca = CertificateAuthority()
+
+printf("Enter filebase that contains your ca's .csr and key files file\n")
+printf("For example if you created your csr with filebase ~/ca/ca you now\n")
+printf("have ~/ca/ca.csr and ~/ca/ca.key file to self sign as your ca\n")
+printf("So you would use ~/ca/ca as your filebase\n")
+printf("Please enter your filebase:")
+fileBase = chop(sys.stdin.readline())
+csr_file = fullPath(fileBase + ".csr")
+key_file = fullPath(fileBase + ".key")
+crt_file = fullPath(fileBase + ".crt")
+crt_fp = open(crt_file,"w")
+
+csr = ca.load_req(csr_file)
+key = ca.load_pri_key(key_file)
+
+kw = {}
+
+printf("Enter number of days for this cert to be valid starting as of now:")
+kw["days"] = int(chop(sys.stdin.readline()))
+
+printf("Enter a serial number to use on this cert:")
+kw["serial"] = int(chop(sys.stdin.readline()))
+kw["ca"] = True   #This is a CA=False is not an option
+
+crt = ca.selfsignca(key,csr,**kw)
+crt_fp.write(crt.as_pem())
+crt_fp.close()
