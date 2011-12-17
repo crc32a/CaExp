@@ -19,13 +19,21 @@ if chop(sys.stdin.readline()).lower()[0] == "y":
     allowCa = True
 else:
     allowCa = False
+
 ca_kw = {}
 ca_kw["key_file"] = caBase + ".key"
 ca_kw["crt_file"] = caBase + ".crt"
 
 ca = CertificateAuthority(**ca_kw)
 csr = ca.load_req(csrBase + ".csr")
-crt = ca.signcsr(csr,ca=allowCa)
+kw  = {}
+kw["ca"] = allowCa
+printf("Enter number of days for this cert to be valid starting as of now:")
+kw["days"] = int(chop(sys.stdin.readline()))
+printf("Enter a serial number to use on this cert:")
+kw["serial"] = int(chop(sys.stdin.readline()))
+
+crt = ca.signcsr(csr,**kw)
 
 crt_pem = crt.as_pem()
 crt_file = fullPath(csrBase + ".crt")
